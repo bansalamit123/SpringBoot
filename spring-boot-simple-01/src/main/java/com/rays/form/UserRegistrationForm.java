@@ -5,11 +5,9 @@ import java.util.Date;
 
 import javax.validation.constraints.NotEmpty;
 
-import com.rays.common.BaseDTO;
 import com.rays.common.BaseForm;
-import com.rays.dto.UserDTO;
 
-public class UserForm extends BaseForm {
+public class UserRegistrationForm extends BaseForm {
 
 	@NotEmpty(message = "firstName is required")
 	private String firstName;
@@ -25,9 +23,7 @@ public class UserForm extends BaseForm {
 
 	private Date dob;
 
-	private long roleId;
-
-	public UserForm() {
+	public UserRegistrationForm() {
 	}
 
 	public String getFirstName() {
@@ -68,25 +64,5 @@ public class UserForm extends BaseForm {
 
 	public void setDob(Date dob) {
 		this.dob = dob;
-	}
-
-	public long getRoleId() {
-		return roleId;
-	}
-
-	public void setRoleId(long roleId) {
-		this.roleId = roleId;
-	}
-
-	@Override
-	public BaseDTO getDto() {
-		UserDTO dto = initDTO(new UserDTO());
-		dto.setFirstName(firstName);
-		dto.setLastName(lastName);
-		dto.setLoginId(loginId);
-		dto.setPassword(password);
-		dto.setDob(dob);
-		dto.setRoleId(roleId);
-		return dto;
 	}
 }

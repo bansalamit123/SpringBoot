@@ -3,38 +3,48 @@ package com.rays.ctl;
 
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.rays.common.BaseCtl;
 import com.rays.common.ORSResponse;
+import com.rays.dto.AttachmentDTO;
 import com.rays.dto.UserDTO;
 import com.rays.form.UserForm;
+import com.rays.service.AttachmentService;
 import com.rays.service.UserService;
 
 @RestController
 @RequestMapping(value = "User")
-public class UserCtl {
+public class UserCtl extends BaseCtl {
 
 	@Autowired
 	public UserService userService;
 
+	@Autowired
+	public AttachmentService attachmentService;
+
 	@PostMapping("save")
-	public ORSResponse save(@RequestBody UserForm form) {
+	public ORSResponse save(@RequestBody @Valid UserForm form, BindingResult bindingResult) {
 
-		ORSResponse res = new ORSResponse();
+		ORSResponse res = validate(bindingResult);
 
-		UserDTO dto = new UserDTO();
-		dto.setId(form.getId());
-		dto.setFirstName(form.getFirstName());
-		dto.setLastName(form.getLastName());
-		dto.setLoginId(form.getLoginId());
-		dto.setPassword(form.getPassword());
-		dto.setDob(form.getDob());
+		if (!res.isSuccess()) {
+			return res;
+		}
+
+		UserDTO dto = (UserDTO) form.getDto();
 
 		if (dto.getId() != null && dto.getId() > 0) {
 			userService.update(dto);
@@ -81,6 +91,40 @@ public class UserCtl {
 		} else {
 			res.addData(list);
 		}
+		return res;
+	}
+
+	@PostMapping("/profilePic/{userId}")
+	public ORSResponse uploadPic(@PathVariable Long userId, @RequestParam("file") MultipartFile file,
+			HttpServletRequest req) {
+
+		AttachmentDTO attachmentDto = new AttachmentDTO(file);
+
+		attachmentDto.setDescription("profile pic");
+
+		attachmentDto.setUserId(userId);
+
+		UserDTO userDto = userService.findById(userId);
+
+		if (userDto.getImageId() != null && userDto.getImageId() > 0) {
+
+			attachmentDto.setId(userDto.getImageId());
+
+		}
+
+		Long imageId = attachmentService.save(attachmentDto);
+
+		if (userDto.getImageId() == null) {
+
+			userDto.setImageId(imageId);
+
+			userService.update(userDto);
+		}
+
+		ORSResponse res = new ORSResponse();
+
+		res.addResult("imageId", imageId);
+
 		return res;
 	}
 }
