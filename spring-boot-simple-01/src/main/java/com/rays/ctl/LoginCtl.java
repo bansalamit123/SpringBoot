@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.rays.common.BaseCtl;
 import com.rays.common.ORSResponse;
 import com.rays.dto.UserDTO;
+import com.rays.form.LoginForm;
 import com.rays.form.UserRegistrationForm;
 import com.rays.service.UserService;
 
@@ -22,6 +23,32 @@ public class LoginCtl extends BaseCtl {
 
 	@Autowired
 	public UserService service;
+	
+	@PostMapping("login")
+	public ORSResponse login(@RequestBody @Valid LoginForm form, BindingResult bindingResult) {
+
+		ORSResponse res = validate(bindingResult);
+
+		if (!(res.isSuccess())) {
+			return res;
+		}
+
+		UserDTO dto = service.authenticate(form.getLoginId(), form.getPassword());
+
+		if (dto != null) {
+
+			res.setSuccess(true);
+			res.addData(dto);
+
+		} else {
+
+			res.setSuccess(false);
+			res.addMessage("Login ID & Password is invalid...!!!");
+		}
+
+		return res;
+	}
+
 
 	@PostMapping("signUp")
 	public ORSResponse signUp(@RequestBody @Valid UserRegistrationForm form, BindingResult bindingResult) {
