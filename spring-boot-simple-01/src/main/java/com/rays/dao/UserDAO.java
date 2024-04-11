@@ -27,6 +27,9 @@ public class UserDAO {
 	@Autowired
 	public RoleDAO roleDao;
 
+	@Autowired
+	public AttachmentDAO attachmentDao;
+
 	public void populate(UserDTO dto) {
 
 		RoleDTO roleDto = roleDao.findByPk(dto.getRoleId());
@@ -50,6 +53,11 @@ public class UserDAO {
 	}
 
 	public void delete(UserDTO dto) {
+
+		if (dto.getImageId() != null && dto.getImageId() > 0) {
+			attachmentDao.delete(attachmentDao.findByPk(dto.getImageId()));
+		}
+
 		entityManager.remove(dto);
 	}
 
